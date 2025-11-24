@@ -7,7 +7,7 @@ O objetivo é aplicar conceitos de programação web, APIs REST, integração en
 
 Funcionalidades Principais
 
-Fornecedores
+Fornecedores:
 
 Cadastro de fornecedores
 Edição e exclusão
@@ -15,7 +15,7 @@ CNPJ único
 Endereço e contatos
 Validação de campos obrigatórios
 
-Produtos
+Produtos:
 
 Cadastro de produtos
 Edição e exclusão
@@ -24,7 +24,7 @@ Validações obrigatórias
 Código de barras único
 Categoria, unidade e descrição
 
-Associação Produto–Fornecedor
+Associação Produto–Fornecedor:
 
 Associar fornecedores a produtos
 Impedir associação duplicada
@@ -33,27 +33,31 @@ Listar fornecedores vinculados a cada produto
 
 User Stories (Requisitos Funcionais)
 
-1. Cadastro de Produto
-Como funcionário, quero cadastrar produtos informando nome, categoria, valor e código de barras.
-O sistema deve impedir:
-código de barras duplicado
-campos obrigatórios vazios
-
-2. Cadastro de Fornecedor
+1. Cadastro de Fornecedor
+   
 Como funcionário, quero cadastrar fornecedores informando razão social, CNPJ, telefone e endereço.
 O sistema deve impedir:
 CNPJ duplicado
 CNPJ inválido
 campos obrigatórios vazios
 
+2. Cadastro de Produto
+   
+Como funcionário, quero cadastrar produtos informando nome, categoria, valor e código de barras.
+O sistema deve impedir:
+código de barras duplicado
+campos obrigatórios vazios
+
 3. Associação Produto–Fornecedor
+   
 Como funcionário, quero vincular produtos e fornecedores.
 O sistema deve impedir:
 associação repetida
 fornecedor inexistente
 produto inexistente
 
-Tecnologias Utilizadas
+Tecnologias Utilizadas:
+
 Backend
 Node.js
 Express
@@ -61,18 +65,21 @@ SQLite3
 Axios
 Nodemon
 
-Frontend
+Frontend:
+
 React
 React Router
 Axios
 CSS/Bootstrap
 
-Outras ferramentas
+Outras ferramentas:
+
 Insomnia / Postman
 Git + GitHub
 VS Code
 
 Como Rodar o Backend
+
 Acesse a pasta /backend
 Instale dependências:
 npm install
@@ -82,6 +89,7 @@ API sobe em:
 http://localhost:3001
 
 Como Rodar o Frontend
+
 Acesse a pasta /frontend
 Instale dependências:
 npm install
@@ -91,6 +99,7 @@ Interface sobe em:
 http://localhost:3000
 
 Endpoints da API
+
 📦 Produtos
 GET /produtos POST /produtos PUT /produtos/:id DELETE /produtos/:id
 🏭 Fornecedores
