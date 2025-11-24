@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Estoque</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px;
+            background: #f5f5f5;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            margin-bottom: -2px;
+        }
+
+        .tab-button:hover {
+            background: #eeeeee;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .message {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th {
+            background: #f5f5f5;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 2px solid #ddd;
+        }
+
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #999;
+            padding: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📦 Sistema de Estoque</h1>
+            <p>Gerenciamento de Fornecedores e Produtos</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('suppliers')">Fornecedores</button>
+            <button class="tab-button" onclick="switchTab('products')">Produtos</button>
+            <button class="tab-button" onclick="switchTab('associations')">Associações</button>
+        </div>
+
+        <div class="content">
+            <!-- TAB: FORNECEDORES -->
+            <div id="suppliers" class="tab-content active">
+                <h2>Gerenciar Fornecedores</h2>
+                <div id="supplierMessage" class="message"></div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Razão Social</label>
+                        <input type="text" id="supplierName" placeholder="Ex: Empresa LTDA">
+                    </div>
+                    <div class="form-group">
+                        <label>CNPJ</label>
+                        <input type="text" id="supplierCNPJ" placeholder="Ex: 12.345.678/0001-90">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Endereço</label>
+                        <input type="text" id="supplierAddress" placeholder="Ex: Rua Principal, 123">
+                    </div>
+                    <div class="form-group">
+                        <label>Telefone</label>
+                        <input type="text" id="supplierPhone" placeholder="Ex: (11) 3456-7890">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="supplierEmail" placeholder="Ex: contato@empresa.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Contato Principal</label>
+                        <input type="text" id="supplierContact" placeholder="Ex: João Silva">
+                    </div>
+                </div>
+
+                <button onclick="createSupplier()">➕ Adicionar Fornecedor</button>
+
+                <h3 style="margin-top: 30px;">Lista de Fornecedores</h3>
+                <table id="suppliersList">
+                    <thead>
+                        <tr>
+                            <th>Razão Social</th>
+                            <th>CNPJ</th>
+                            <th>Telefone</th>
+                            <th>Email</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- TAB: PRODUTOS -->
+            <div id="products" class="tab-content">
+                <h2>Gerenciar Produtos</h2>
+                <div id="productMessage" class="message"></div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nome do Produto</label>
+                        <input type="text" id="productName" placeholder="Ex: Parafuso M10">
+                    </div>
+                    <div class="form-group">
+                        <label>Código de Barras</label>
+                        <input type="text" id="productBarcode" placeholder="Ex: 1234567890123">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Preço</label>
+                        <input type="number" id="productPrice" placeholder="Ex: 150.50" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Categoria</label>
+                        <input type="text" id="productCategory" placeholder="Ex: Ferragens">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Quantidade</label>
+                        <input type="number" id="productQuantity" placeholder="Ex: 100">
+                    </div>
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <input type="text" id="productDescription" placeholder="Ex: Parafuso em aço inoxidável">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Data de Validade</label>
+                        <input type="date" id="productExpiry">
+                    </div>
+                </div>
+
+                <button onclick="createProduct()">➕ Adicionar Produto</button>
+
+                <h3 style="margin-top: 30px;">Lista de Produtos</h3>
+                <table id="productsList">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Código de Barras</th>
+                            <th>Preço</th>
+                            <th>Categoria</th>
+                            <th>Quantidade</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- TAB: ASSOCIAÇÕES -->
+            <div id="associations" class="tab-content">
+                <h2>Associar Fornecedores a Produtos</h2>
+                <div id="associationMessage" class="message"></div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fornecedor</label>
+                        <select id="associationSupplier">
+                            <option value="">Selecione um fornecedor</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Produto</label>
+                        <select id="associationProduct">
+                            <option value="">Selecione um produto</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button onclick="createAssociation()">➕ Associar</button>
+
+                <h3 style="margin-top: 30px;">Associações</h3>
+                <table id="associationsList">
+                    <thead>
+                        <tr>
+                            <th>Fornecedor</th>
+                            <th>Produto</th>
+                            <th>Data</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3001/api';
+
+        // Alternar abas
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'suppliers') loadSuppliers();
+            if (tabName === 'products') loadProducts();
+            if (tabName === 'associations') {
+                loadAssociations();
+                loadSuppliersForAssociation();
+                loadProductsForAssociation();
+            }
+        }
+
+        // Mostrar mensagem
+        function showMessage(elementId, message, type) {
+            const messageEl = document.getElementById(elementId);
+            messageEl.textContent = message;
+            messageEl.className = `message ${type} show`;
+            setTimeout(() => {
+                messageEl.classList.remove('show');
+            }, 3000);
+        }
+
+        // ========== FORNECEDORES ==========
+
+        async function createSupplier() {
+            const data = {
+                razaoSocial: document.getElementById('supplierName').value,
+                cnpj: document.getElementById('supplierCNPJ').value,
+                endereco: document.getElementById('supplierAddress').value,
+                telefone: document.getElementById('supplierPhone').value,
+                email: document.getElementById('supplierEmail').value,
+                contatoPrincipal: document.getElementById('supplierContact').value
+            };
+
+            // Validação dos campos obrigatórios
+            if (!data.razaoSocial || !data.cnpj || !data.endereco || !data.telefone || !data.email || !data.contatoPrincipal) {
+                showMessage('supplierMessage', '❌ Todos os campos são obrigatórios!', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/suppliers`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    showMessage('supplierMessage', '✅ Fornecedor adicionado com sucesso!', 'success');
+                    document.getElementById('supplierName').value = '';
+                    document.getElementById('supplierCNPJ').value = '';
+                    document.getElementById('supplierAddress').value = '';
+                    document.getElementById('supplierPhone').value = '';
+                    document.getElementById('supplierEmail').value = '';
+                    document.getElementById('supplierContact').value = '';
+                    loadSuppliers();
+                } else {
+                    showMessage('supplierMessage', '❌ Erro ao adicionar fornecedor!', 'error');
+                }
+            } catch (error) {
+                showMessage('supplierMessage', '❌ Erro na conexão!', 'error');
+            }
+        }
+
+        async function loadSuppliers() {
+            try {
+                const response = await fetch(`${API_URL}/suppliers`);
+                const suppliers = await response.json();
+                const tbody = document.querySelector('#suppliersList tbody');
+                tbody.innerHTML = '';
+
+                if (suppliers.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="no-data">Nenhum fornecedor cadastrado</td></tr>';
+                    return;
+                }
+
+                suppliers.forEach(supplier => {
+                    const row = `
+                        <tr>
+                            <td>${supplier.razaoSocial}</td>
+                            <td>${supplier.cnpj}</td>
+                            <td>${supplier.telefone}</td>
+                            <td>${supplier.email}</td>
+                            <td><button class="btn-delete" onclick="deleteSupplier('${supplier.id}')">🗑️ Deletar</button></td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Erro ao carregar fornecedores:', error);
+            }
+        }
+
+        async function deleteSupplier(id) {
+            if (!confirm('Tem certeza que deseja deletar este fornecedor?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/suppliers/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    showMessage('supplierMessage', '✅ Fornecedor deletado!', 'success');
+                    loadSuppliers();
+                }
+            } catch (error) {
+                showMessage('supplierMessage', '❌ Erro ao deletar!', 'error');
+            }
+        }
+
+        // ========== PRODUTOS ==========
+
+        async function createProduct() {
+            const data = {
+                nome: document.getElementById('productName').value,
+                codigoBarras: document.getElementById('productBarcode').value,
+                preco: parseFloat(document.getElementById('productPrice').value),
+                categoria: document.getElementById('productCategory').value,
+                quantidade: parseInt(document.getElementById('productQuantity').value),
+                descricao: document.getElementById('productDescription').value,
+                dataValidade: document.getElementById('productExpiry').value
+            };
+
+            // Validação dos campos obrigatórios
+            if (!data.nome || !data.codigoBarras || isNaN(data.preco) || isNaN(data.quantidade) || !data.categoria) {
+                showMessage('productMessage', '❌ Campos obrigatórios não preenchidos!', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/products`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    showMessage('productMessage', '✅ Produto adicionado com sucesso!', 'success');
+                    document.getElementById('productName').value = '';
+                    document.getElementById('productBarcode').value = '';
+                    document.getElementById('productPrice').value = '';
+                    document.getElementById('productCategory').value = '';
+                    document.getElementById('productQuantity').value = '';
+                    document.getElementById('productDescription').value = '';
+                    document.getElementById('productExpiry').value = '';
+                    loadProducts();
+                } else {
+                    showMessage('productMessage', '❌ Erro ao adicionar produto!', 'error');
+                }
+            } catch (error) {
+                showMessage('productMessage', '❌ Erro na conexão!', 'error');
+            }
+        }
+
+        async function loadProducts() {
+            try {
+                const response = await fetch(`${API_URL}/products`);
+                const products = await response.json();
+                const tbody = document.querySelector('#productsList tbody');
+                tbody.innerHTML = '';
+
+                if (products.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="no-data">Nenhum produto cadastrado</td></tr>';
+                    return;
+                }
+
+                products.forEach(product => {
+                    const row = `
+                        <tr>
+                            <td>${product.nome}</td>
+                            <td>${product.codigoBarras}</td>
+                            <td>R$ ${parseFloat(product.preco).toFixed(2)}</td>
+                            <td>${product.categoria}</td>
+                            <td>${product.quantidade}</td>
+                            <td><button class="btn-delete" onclick="deleteProduct('${product.id}')">🗑️ Deletar</button></td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Erro ao carregar produtos:', error);
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('Tem certeza que deseja deletar este produto?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/products/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    showMessage('productMessage', '✅ Produto deletado!', 'success');
+                    loadProducts();
+                }
+            } catch (error) {
+                showMessage('productMessage', '❌ Erro ao deletar!', 'error');
+            }
+        }
+
+        // ========== ASSOCIAÇÕES ==========
+
+        async function createAssociation() {
+            const supplierId = document.getElementById('associationSupplier').value;
+            const productId = document.getElementById('associationProduct').value;
+
+            // Validação dos campos obrigatórios
+            if (!supplierId || !productId) {
+                showMessage('associationMessage', '❌ Selecione fornecedor e produto!', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/supplier-products`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ supplierId, productId })
+                });
+
+                if (response.ok) {
+                    showMessage('associationMessage', '✅ Associação criada com sucesso!', 'success');
+                    loadAssociations();
+                } else {
+                    showMessage('associationMessage', '❌ Erro ao criar associação!', 'error');
+                }
+            } catch (error) {
+                showMessage('associationMessage', '❌ Erro na conexão!', 'error');
+            }
+        }
+
+        async function loadAssociations() {
+            try {
+                const response = await fetch(`${API_URL}/supplier-products`);
+                const associations = await response.json();
+                const tbody = document.querySelector('#associationsList tbody');
+                tbody.innerHTML = '';
+
+                if (associations.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="no-data">Nenhuma associação criada</td></tr>';
+                    return;
+                }
+
+                associations.forEach(assoc => {
+                    const row = `
+                        <tr>
+                            <td>${assoc.supplierName}</td>
+                            <td>${assoc.productName}</td>
+                            <td>${new Date(assoc.dataCadastro).toLocaleDateString('pt-BR')}</td>
+                            <td><button class="btn-delete" onclick="deleteAssociation('${assoc.id}')">🗑️ Deletar</button></td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Erro ao carregar associações:', error);
+            }
+        }
+
+        async function loadSuppliersForAssociation() {
+            try {
+                const response = await fetch(`${API_URL}/suppliers`);
+                const suppliers = await response.json();
+                const select = document.getElementById('associationSupplier');
+                select.innerHTML = '<option value="">Selecione um fornecedor</option>';
+
+                suppliers.forEach(supplier => {
+                    const option = document.createElement('option');
+                    option.value = supplier.id;
+                    option.textContent = supplier.razaoSocial;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar fornecedores:', error);
+            }
+        }
+
+        async function loadProductsForAssociation() {
+            try {
+                const response = await fetch(`${API_URL}/products`);
+                const products = await response.json();
+                const select = document.getElementById('associationProduct');
+                select.innerHTML = '<option value="">Selecione um produto</option>';
+
+                products.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product.id;
+                    option.textContent = product.nome;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar produtos:', error);
+            }
+        }
+
+        async function deleteAssociation(id) {
+            if (!confirm('Tem certeza que deseja deletar esta associação?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/supplier-products/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    showMessage('associationMessage', '✅ Associação deletada!', 'success');
+                    loadAssociations();
+                }
+            } catch (error) {
+                showMessage('associationMessage', '❌ Erro ao deletar!', 'error');
+            }
+        }
+
+        // Carregar dados ao iniciar
+        loadSuppliers();
+    </script>
+</body>
+</html>
